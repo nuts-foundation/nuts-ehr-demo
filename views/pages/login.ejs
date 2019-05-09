@@ -159,6 +159,7 @@
 
   const handleSuccess = function (status) {
     localStorage.setItem('nuts-session', JSON.stringify(status.signature))
+    document.cookie = "nuts-session="+JSON.stringify(status.signature)
     window.location = '/dossier'
   }
 
