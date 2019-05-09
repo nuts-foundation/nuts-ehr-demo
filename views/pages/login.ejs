@@ -1,0 +1,159 @@
+<script src="//cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+<div>
+  <h1>Login</h1>
+  <section class="irma-web-form">
+    <header class="header">
+      <p>Inloggen met <i class="irma-web-logo">IRMA</i></p>
+      <section class="helper">
+        <p>Kom je er niet uit? Kijk dan eerst eens op <a href="https://privacybydesign.foundation/irma-begin/">de
+            website van IRMA</a>.</p>
+      </section>
+    </header>
+    <section class="content">
+      <section class="centered loading">
+        <div class="irma-web-loading-animation"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p>Eén moment alsjeblieft</p>
+      </section>
+      <section class="centered initialized">
+        <div id="qrcode"></div>
+      </section>
+      <section class="centered waiting-for-user">
+        <div class="irma-web-waiting-for-user-animation"></div>
+        <p>Volg de instructies op je telefoon</p>
+      </section>
+      <section class="centered success">
+        <div class="irma-web-checkmark-animation"></div>
+        <p>Gelukt!</p>
+      </section>
+      <section class="centered expired">
+        <p>Transactie is verlopen</p>
+        <p><a href="#" onclick="start()">Opnieuw proberen</a></p>
+      </section>
+      <section class="centered cancelled">
+        <p>Transactie is geannuleerd</p>
+        <p><a href="#" onclick="start()">Opnieuw proberen</a></p>
+      </section>
+      <section class="centered errored">
+        <p>Er is een fout opgetreden</p>
+        <p><a href="#" onclick="start()">Opnieuw proberen</a></p>
+      </section>
+    </section>
+  </section>
+</div>
+
+<script type="application/javascript">
+
+  const fetchStatus = function (sessionId) {
+    return fetch(`http://localhost:3000/auth/contract/session/${sessionId}`, {
+      method: 'GET',
+      mode: 'cors',
+      headers: {"Content-Type": "application/json"},
+      cache: 'reload'
+    }).then((result) => result.json())
+  };
+
+  const showHelper = function(){
+    document.querySelector('.irma-web-form .header').classList.add('show-helper')
+  }
+
+  const hideHelper = function () {
+    document.querySelector('.irma-web-form .header').classList.remove('show-helper')
+  }
+
+
+  const start = function () {
+    setState(WAIT_FOR_QR_CODE)
+    // attach a qrcode te qrcode div
+    let qrcode = new QRCode("qrcode");
+
+    // show helper after 20 seconds
+    setTimeout(showHelper, 20000)
+
+    let postData = {
+      type: "BehandelaarLogin",
+      language: "NL",
+      version: "v1"
+    };
+
+    fetch('http://localhost:3000/auth/contract/session', {
+      method: 'POST',
+      mode: 'cors',
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(postData),
+      cache: 'reload'
+    }).then((result) => result.json()
+    ).then((result) => {
+      qrcode.makeCode(JSON.stringify(result.qr_code_info));
+      pollForStatus(result.session_id)
+    }).catch((err) => console.log("err", err));
+  }
+
+
+  const pollForStatus = function (sessionId) {
+    fetchStatus(sessionId)
+      .then((status) => {
+        console.log("state:", status);
+        stateMachine(status);
+      }).catch(() => {
+        stateMachine("ERROR");
+      }
+    )
+  };
+
+  // handle these cases: https://godoc.org/github.com/privacybydesign/irmago/server#Status
+  const stateMachine = function (status) {
+    switch (status.status) {
+      case "INITIALIZED":
+        setState(INITIALIZED_STATE);
+        setTimeout(() => pollForStatus(status.session_id), 1000);
+        break;
+      case "CONNECTED":
+        setState(WAITING_FOR_USER_STATE);
+        setTimeout(() => pollForStatus(status.session_id), 1000);
+        break;
+      case "TIMEOUT":
+        setState(EXPIRED_STATE);
+        break;
+      case "CANCELLED":
+        setState(CANCELLED_STATE);
+        break;
+      case "DONE":
+        setState(SUCCESS_STATE);
+        break;
+      case "ERROR":
+      default:
+        setState(ERROR_STATE)
+        break;
+    }
+
+  }
+
+  const WAIT_FOR_QR_CODE = 'loading';
+  const INITIALIZED_STATE = 'initialized';
+  const WAITING_FOR_USER_STATE = 'waiting-for-user';
+  const SUCCESS_STATE = 'success';
+  const EXPIRED_STATE = 'expired';
+  const CANCELLED_STATE = 'cancelled';
+  const ERROR_STATE = 'errored'
+
+  let currentState;
+
+  const stateEl = function (state) {
+    return document.querySelector(`.irma-web-form .content .${state}`)
+  };
+
+  const setState = function (state) {
+    currentState = state;
+    hideAllStates();
+    stateEl(state).style.display = ""
+  };
+
+  const hideAllStates = function () {
+    document.querySelectorAll(`.irma-web-form .content .centered`).forEach((el) => {
+      el.style.display = 'none'
+    })
+  };
+
+  start();
+
+</script>

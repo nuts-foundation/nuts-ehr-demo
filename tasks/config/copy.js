@@ -9,7 +9,7 @@
  *   https://sailsjs.com/anatomy/tasks/config/copy.js
  *
  */
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   grunt.config.set('copy', {
     dev: {
@@ -18,6 +18,11 @@ module.exports = function(grunt) {
         cwd: './assets',
         src: ['**/*.!(coffee|less)'],
         dest: '.tmp/public'
+      }, {
+        expand: true,
+        cwd: './node_modules',
+        src: ['irma-web-frontend/dist/irma-web-frontend.css'],
+        dest: '.tmp/public/styles'
       }]
     },
     build: {
