@@ -66,11 +66,24 @@
     document.querySelector('.irma-web-form .header').classList.remove('show-helper')
   }
 
+  let qrcode = new QRCode("qrcode");
 
   const start = function () {
     setState(WAIT_FOR_QR_CODE)
+
+    let existingSession = JSON.parse(localStorage.getItem('nuts-session'))
+    if (existingSession) {
+      window.location = '/dossier'
+      return
+    }
+
+    let existingSessionInit = JSON.parse(localStorage.getItem('session_init_info'))
+    if (existingSessionInit) {
+      qrcode.makeCode(JSON.stringify(existingSessionInit.qr_code_info))
+      pollForStatus(existingSessionInit.session_id)
+      return;
+    }
     // attach a qrcode te qrcode div
-    let qrcode = new QRCode("qrcode");
 
     // show helper after 20 seconds
     setTimeout(showHelper, 20000)
@@ -90,6 +103,7 @@
     }).then((result) => result.json()
     ).then((result) => {
       qrcode.makeCode(JSON.stringify(result.qr_code_info));
+      localStorage.setItem('session_init_info', JSON.stringify(result))
       pollForStatus(result.session_id)
     }).catch((err) => console.log("err", err));
   }
@@ -100,7 +114,8 @@
       .then((status) => {
         console.log("state:", status);
         stateMachine(status);
-      }).catch(() => {
+      }).catch((err) => {
+        console.log(err)
         stateMachine("ERROR");
       }
     )
@@ -118,20 +133,33 @@
         setTimeout(() => pollForStatus(status.session_id), 1000);
         break;
       case "TIMEOUT":
+        localStorage.clear()
         setState(EXPIRED_STATE);
         break;
       case "CANCELLED":
+        localStorage.clear()
         setState(CANCELLED_STATE);
         break;
       case "DONE":
-        setState(SUCCESS_STATE);
+        localStorage.clear()
+        if (status.proofStatus == "VALID") {
+          setState(SUCCESS_STATE);
+          setTimeout(() => handleSuccess(status), 2000)
+        } else {
+          setState(ERROR_STATE);
+        }
         break;
       case "ERROR":
       default:
+        localStorage.clear()
         setState(ERROR_STATE)
         break;
     }
+  }
 
+  const handleSuccess = function (status) {
+    localStorage.setItem('nuts-session', JSON.stringify(status.signature))
+    window.location = '/dossier'
   }
 
   const WAIT_FOR_QR_CODE = 'loading';
