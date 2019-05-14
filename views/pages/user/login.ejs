@@ -66,16 +66,11 @@
     document.querySelector('.irma-web-form .header').classList.remove('show-helper')
   }
 
+  // attach a qrcode the qrcode div
   let qrcode = new QRCode("qrcode");
 
   const start = function () {
     setState(WAIT_FOR_QR_CODE)
-
-    let existingSession = JSON.parse(localStorage.getItem('nuts-session'))
-    if (existingSession) {
-      window.location = '/dossier'
-      return
-    }
 
     let existingSessionInit = JSON.parse(localStorage.getItem('session_init_info'))
     if (existingSessionInit) {
@@ -83,7 +78,6 @@
       pollForStatus(existingSessionInit.session_id)
       return;
     }
-    // attach a qrcode te qrcode div
 
     // show helper after 20 seconds
     setTimeout(showHelper, 20000)
@@ -105,7 +99,11 @@
       qrcode.makeCode(JSON.stringify(result.qr_code_info));
       localStorage.setItem('session_init_info', JSON.stringify(result))
       pollForStatus(result.session_id)
-    }).catch((err) => console.log("err", err));
+    }).catch((err) => {
+        console.log("err", err)
+        stateMachine("ERROR")
+      }
+    );
   }
 
 
@@ -158,9 +156,18 @@
   }
 
   const handleSuccess = function (status) {
-    localStorage.setItem('nuts-session', JSON.stringify(status.signature))
-    document.cookie = "nuts-session="+JSON.stringify(status.signature)
-    window.location = '/dossier'
+    fetch('/login', {
+      method: 'POST',
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({"nuts_contract": JSON.stringify(status.signature)}),
+      cache: 'reload',
+      json: true
+    }).then((res) => {
+      console.log("result", res);
+      window.location = '/user'
+    }).catch((err) => {
+      console.log("error while validating session", err);
+    })
   }
 
   const WAIT_FOR_QR_CODE = 'loading';
