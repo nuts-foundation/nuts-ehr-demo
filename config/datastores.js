@@ -50,7 +50,9 @@ module.exports.datastores = {
     ***************************************************************************/
     // adapter: 'sails-mysql',
     // url: 'mysql://user:password@host:port/database',
-
+    adapter: 'sails-postgresql',
+    url: 'postgresql://postgres:@localhost:15432/fhirbase',
+    schemaName: 'public',
   },
 
 
