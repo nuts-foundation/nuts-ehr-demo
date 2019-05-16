@@ -14,7 +14,7 @@
         <% patients.forEach(function (entry) {
           let patient = entry.resource
         %>
-        <tr>
+        <tr data-href="patients/<%= patient.id %>">
           <th>
             <%= sails.jp.query(patient.identifier, '$[?(@.system==\'http://hl7.org/fhir/sid/us-ssn\')].value') %>
           </th>
@@ -32,3 +32,11 @@
     </div>
   </div>
 </div>
+
+<script>
+  $(document).ready(function ($) {
+    $('tr[data-href]').click(function () {
+      window.document.location = $(this).data("href");
+    });
+  });
+</script>

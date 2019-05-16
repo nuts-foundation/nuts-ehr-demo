@@ -7,7 +7,7 @@ module.exports = {
   exits: {
     success: {
       responseType: 'view',
-      viewTemplatePath: 'pages/patients/patients'
+      viewTemplatePath: 'pages/patients/list'
     }
 
   },
@@ -15,7 +15,6 @@ module.exports = {
   fn: async function (inputs, exits) {
 
     let patients = await Patient.find({limit: 10});
-    // All done.
     return exits.success({patients});
   }
 

@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="card">
+    <div class="card-header">Patient details</div>
+    <div class="card-body">
+      <h5>
+        <%= sails.jp.query(patient.resource, '$.name[0].given[0]') %>
+        <%= sails.jp.query(patient.resource, '$.name[0].family') %>
+      </h5>
+      <table>
+        <tr>
+          <td>BSN:</td>
+          <td> <%= sails.jp.query(patient.resource.identifier, '$[?(@.system==\'http://hl7.org/fhir/sid/us-ssn\')].value') %> </td>
+        </tr>
+        <tr>
+          <td>Geboortedatum:</td>
+          <td> <%= patient.resource.birthDate %> </td>
+        </tr>
+        <tr>
+          <td>Geslacht:</td>
+          <td> <%= patient.resource.gender === 'male' ? 'Man' : 'Vrouw' %> </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

@@ -24,6 +24,7 @@ module.exports.routes = {
   'post /login': 'UserController.new-session',
   'get /user': 'UserController.welcome',
   'get /patients': 'PatientsController.list',
+  'get /patients/:id': 'PatientsController.show',
 
 
   /****************************************************************************
