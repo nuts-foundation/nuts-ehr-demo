@@ -8,7 +8,7 @@ module.exports = {
 
 
   inputs: {
-    id: {
+    patientId: {
       type: 'string',
       description: 'The internal patient id'
     }
@@ -26,11 +26,11 @@ module.exports = {
 
   fn: async function (inputs, exits) {
 
-    let patient = await Patient.findOne({id: inputs.id});
-    console.log(patient);
+    let patient = await Patient.findOne({id: inputs.patientId});
 
-    return exits.success({patient})
+    let externalCareProviders = await ExternalCareProvider.find({where: {patientId: patient.id}});
 
+    return exits.success({patient, externalCareProviders})
   }
 
 

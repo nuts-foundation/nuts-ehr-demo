@@ -55,5 +55,9 @@ module.exports.datastores = {
     schemaName: 'public',
   },
 
+  disk: {
+    adapter: 'sails-disk'
+  }
+
 
 };
