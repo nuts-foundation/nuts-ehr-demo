@@ -12,6 +12,11 @@ module.exports = {
     organizationName: {
       type:'string',
       required: true,
+    },
+    uniqueId: {
+      type: 'string',
+      required: true,
+      unique: true
     }
   },
 

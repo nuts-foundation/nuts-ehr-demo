@@ -1,6 +1,12 @@
 <div class="container">
   <h1>External CareProviders</h1>
 
+  <% if(errorMsg) { %>
+    <div class="alert alert-danger" role="alert">
+      <%= errorMsg %>
+    </div>
+  <% } %>
+
   <form action="" method="GET">
     <input type="text" value="<%= query %>" name="query">
   </form>
@@ -22,7 +28,7 @@
       </td>
       <td><%= entry.identifier.value %></td>
       <td><form method="post">
-          <input type="hidden" name="organizationId" value="<%= entry.identifier.value %>">
+          <input type="hidden" name="organizationId" value="<%= entry.identifier %>">
           <input type="hidden" name="organizationName" value="<%= entry.name %>">
           <button class="btn btn-primary">Voeg toe</button>
         </form></td>
