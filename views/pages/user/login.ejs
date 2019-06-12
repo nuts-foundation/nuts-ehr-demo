@@ -124,11 +124,11 @@
     switch (status.status) {
       case "INITIALIZED":
         setState(INITIALIZED_STATE);
-        setTimeout(() => pollForStatus(status.session_id), 1000);
+        setTimeout(() => pollForStatus(status.token), 1000);
         break;
       case "CONNECTED":
         setState(WAITING_FOR_USER_STATE);
-        setTimeout(() => pollForStatus(status.session_id), 1000);
+        setTimeout(() => pollForStatus(status.token), 1000);
         break;
       case "TIMEOUT":
         localStorage.clear()
