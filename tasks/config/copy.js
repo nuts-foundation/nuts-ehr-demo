@@ -18,11 +18,6 @@ module.exports = function (grunt) {
         cwd: './assets',
         src: ['**/*.!(coffee|less)'],
         dest: '.tmp/public'
-      }, {
-        expand: true,
-        cwd: './node_modules',
-        src: ['irma-web-frontend/dist/irma-web-frontend.css'],
-        dest: '.tmp/public/styles'
       }]
     },
     build: {
