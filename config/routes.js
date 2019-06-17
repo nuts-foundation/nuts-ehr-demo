@@ -28,6 +28,7 @@ module.exports.routes = {
   'get /patients/:patientId/external_care_providers': 'PatientsController.external-care-providers',
   'post /patients/:patientId/external_care_providers': 'PatientsController.external-care-providers',
   'post /patients/:patientId/record_consent': 'PatientsController.record-consent',
+  'get /fhir/patient/:patientId/observations': {action: 'fhir/observations'},
 
 
   /****************************************************************************
