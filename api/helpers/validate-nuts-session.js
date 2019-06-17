@@ -6,7 +6,7 @@ module.exports = {
   description: "Validate the Nuts session by performing a server call to the Nuts node",
 
   inputs: {
-    nuts_session: {
+    nuts_auth_token: {
       required: true,
       description: "The string containing the Nuts contract",
       type: 'string',
@@ -23,16 +23,13 @@ module.exports = {
   },
 
   fn: async function (inputs, exits) {
-    // encode contract to base64
-    const buffer = Buffer.from(inputs.nuts_session);
-
-    let encodedContract = buffer.toString('base64');
-
     const body = {
-      contract_format: 'irma',
-      contract_string: encodedContract,
-      acting_party_cn: 'Helder',
+      contract_format: 'jwt',
+      contract_string: inputs.nuts_auth_token,
+      acting_party_cn: 'Demo EHR',
     };
+
+    sails.log(inputs.nuts_auth_token)
 
     let validationResponse;
 

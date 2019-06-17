@@ -5,7 +5,7 @@ module.exports = {
   description: 'Accept a Nuts-contract. Check its validity, if correct, set the Nuts-contract in the session.',
 
   inputs: {
-    nuts_contract: {
+    nuts_auth_token: {
       type: 'string',
       required: true
     }
@@ -22,7 +22,8 @@ module.exports = {
   },
 
   fn: async function (inputs, exits) {
-    let contract = inputs.nuts_contract;
+    let contract = inputs.nuts_auth_token;
+    sails.log(contract)
 
     try {
       await sails.helpers.validateNutsSession(contract)
