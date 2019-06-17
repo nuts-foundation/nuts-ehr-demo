@@ -33,13 +33,15 @@
     <div class="col">
 
       <div class="card">
-        <div class="card-header">Externe zorg leveranciers</div>
+        <div class="card-header">Externe zorg leveranciers <form method="post" action="<%= patient.id %>/record_consent"><button class="btn btn-primary">Geeft toestemming</button></form></div>
         <div class="card-body">
           <table class="table">
             <thead>
             <tr>
               <th>Naam</th>
               <th>AGB</th>
+              <th>Toestemming gegeven</th>
+              <th>Toestemming ontvangen</th>
             </tr>
             <tbody>
 
@@ -47,6 +49,8 @@
               <tr>
                 <td> <%= cp.organizationName %> </td>
                 <td> <%= cp.organizationId %> </td>
+                <td> <%= consentPerCareProvider['given'][cp.organizationId] ? 'Ja' : 'Nee'%></td>
+                <td> <%= consentPerCareProvider['received'][cp.organizationId] ? 'Ja' : 'Nee'%></td>
               </tr>
             <% }) %>
             </tbody>

@@ -1,3 +1,5 @@
+let rp = require('request-promise');
+
 module.exports = {
 
 
@@ -25,12 +27,55 @@ module.exports = {
 
 
   fn: async function (inputs, exits) {
+    let viewModel = {
+      consentPerCareProvider: {given: {}, received: {}},
+      patient: null,
+      externalCareProviders: []
+    }
 
-    let patient = await Patient.findOne({id: inputs.patientId});
+    viewModel.patient = await Patient.findOne({id: inputs.patientId});
 
-    let externalCareProviders = await ExternalCareProvider.find({where: {patientId: patient.id}});
+    let bsn = sails.jp.query(viewModel.patient.resource.identifier, '$[?(@.system==\'http://hl7.org/fhir/sid/us-ssn\')].value')
 
-    return exits.success({patient, externalCareProviders})
+    viewModel.externalCareProviders = await ExternalCareProvider.find({where: {patientId: viewModel.patient.id}});
+
+    let agb = sails.config.custom.agb;
+
+    for (const actor of viewModel.externalCareProviders) {
+      try {
+        let response = await rp({
+          uri: `http://localhost:1323/consent/check`,
+          method: 'POST',
+          json: true,
+          body: {
+            subject: `urn:oid:2.16.840.1.113883.2.4.6.3:${bsn}`,
+            custodian: agb,
+            actor: actor.organizationId,
+            resourceType: "Observation"
+          }
+        });
+        viewModel.consentPerCareProvider['given'][actor.organizationId] = response.consentGiven == 'true'
+        response = await rp({
+          uri: `http://localhost:1323/consent/check`,
+          method: 'POST',
+          json: true,
+          body: {
+            subject: `urn:oid:2.16.840.1.113883.2.4.6.3:${bsn}`,
+            custodian: actor.organizationId,
+            actor: agb,
+            resourceType: "Observation"
+          }
+        });
+        viewModel.consentPerCareProvider['received'][actor.organizationId] = response.consentGiven == 'true'
+      } catch (err) {
+        sails.log.error(err)
+      }
+    };
+
+    sails.log(viewModel.consentPerCareProvider)
+
+
+    return exits.success(viewModel)
   }
 
 
